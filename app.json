@@ -1,0 +1,6 @@
+{
+  "name": "Paomageddon Tracker",
+  "description": "Tracks all subreddits for their blackout status",
+  "repository": "https://github.com/qix-/paomageddon",
+  "keywords": ["reddit", "pao", "blackout", "paomageddon"]
+}
