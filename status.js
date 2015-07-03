@@ -28,7 +28,11 @@ function getJSON(url, cb) {
     });
 
     response.on('end', function() {
-      cb(null, JSON.parse(body));
+      try {
+        cb(null, JSON.parse(body));
+      } catch(e) {
+        cb(e);
+      }
     });
   });
 }
@@ -66,7 +70,14 @@ function scanSubreddits(after) {
 
   getJSON(url, function(err, json) {
     if (err) {
-      throw err;
+      // reschedule
+      console.warn(
+          chalk.bold.red("Request failed (retry in T-5): %s\n   url: %s"),
+          err.toString(), url);
+      setTimeout(function() {
+        scanSubreddits(after);scanSubreddits(after);scanSubreddits(after);scanSubreddits(after);
+      }, 5000);
+      return;
     }
 
     scanCount += 25;
