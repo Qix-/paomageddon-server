@@ -1,10 +1,20 @@
 'use strict';
 
+var persistFile = './subreddits.json';
+
 var http = require('http');
 var async = require('async');
 var chalk = require('chalk');
+var fs = require('fs');
 
 var subreddits = {};
+try {
+  subreddits = JSON.parse(fs.readFileSync(persistFile));
+  console.log(chalk.bold.green('loaded persistence file'));
+} catch (e) {
+  console.warn(chalk.bold.yellow('Could not load persistence file: %s'),
+        e.toString());
+}
 
 var scanInterval;
 var scanCount = 0;
@@ -84,6 +94,18 @@ function getSpecificSubreddit(subreddit, cb) {
         populateSubreddit(json.data.children[0], cb);
       });
 }
+
+// basic persistence
+setInterval(function() {
+  var contents = JSON.stringify(subreddits);
+  try {
+    fs.writeFileSync(persistFile, contents);
+    console.log(chalk.bold.green('wrote persistence file'));
+  } catch(e) {
+    console.error(chalk.bold.red('Could not write persistence: %s'),
+        e.toString());
+  }
+}, 5000);
 
 module.exports = {
   subreddits: subreddits,
