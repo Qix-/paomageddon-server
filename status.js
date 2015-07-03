@@ -84,10 +84,6 @@ function scanSubreddits(after) {
 scanSubreddits();
 
 function getSpecificSubreddit(subreddit, cb) {
-  if (subreddits[subreddit]) {
-    return cb(null, subreddits[subreddit]);
-  }
-
   getJSON('http://www.reddit.com/subreddits/search.json?q=' + subreddit,
       function(err, json) {
         if (err) {
