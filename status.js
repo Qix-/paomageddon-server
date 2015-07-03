@@ -82,7 +82,7 @@ function scanSubreddits() {
           chalk.bold.red("Request failed (retry in T-5): %s\n   url: %s"),
           err.toString(), url);
       setTimeout(function() {
-        scanSubreddits(after);scanSubreddits(after);scanSubreddits(after);scanSubreddits(after);
+        scanSubreddits();
       }, 5000);
       return;
     }
