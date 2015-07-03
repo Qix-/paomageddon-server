@@ -40,13 +40,16 @@ function populateSubreddit(listing, cb) {
 
    listing = listing.data;
    var name = listing.display_name;
+   var update = name in subreddits;
    subreddits[name] = {
      status: listing.subreddit_type,
      substatus: listing.submission_type,
      description: listing.public_description
    };
 
-   console.log(chalk.grey('scan'), chalk.bold.yellow(name),
+   console.log(
+       chalk.grey(update ? 'update' : 'detect'),
+       chalk.bold.yellow(name),
        chalk[subreddits[name].status === 'public' ? 'green' : 'red'](subreddits[name].status),
        chalk[subreddits[name].substatus === 'any' ? 'green' : 'red'](subreddits[name].substatus));
    cb(null, subreddits[name]);
