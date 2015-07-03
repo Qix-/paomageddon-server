@@ -22,6 +22,10 @@ function detectConfirmation(description, cb) {
 function PaoServ() {
   this.server = express();
 
+  this.server.get('/r', function(req, res) {
+    res.send(statuses.subreddits);
+  });
+
   this.server.get('/r/:subreddit', function(req, res) {
     var subreddit = req.params.subreddit;
     if (!subreddit) {
