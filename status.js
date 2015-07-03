@@ -8,16 +8,21 @@ var chalk = require('chalk');
 var fs = require('fs');
 
 var subreddits = {};
+var scanCount = 0;
+var nextAfter = undefined;
+
 try {
-  subreddits = JSON.parse(fs.readFileSync(persistFile));
+  var p = JSON.parse(fs.readFileSync(persistFile));
+  if (p.scanCount && p.nextAfter && p.subreddits) {
+    subreddits = p.subreddits || {};
+    scanCount = p.scanCount;
+    nextAfter = p.nextAfter;
+  }
   console.log(chalk.bold.green('loaded persistence file'));
 } catch (e) {
   console.warn(chalk.bold.yellow('Could not load persistence file: %s'),
         e.toString());
 }
-
-var scanInterval;
-var scanCount = 0;
 
 function getJSON(url, cb) {
   http.get(url, function(response) {
@@ -59,14 +64,16 @@ function populateSubreddit(listing, cb) {
    cb(null, subreddits[name]);
 }
 
-function scanSubreddits(after) {
+function scanSubreddits() {
   var url = 'http://www.reddit.com/reddits.json?';
   if (scanCount) {
     url += 'count=' + scanCount;
   }
-  if (after) {
-    url += '&after=' + after;
+  if (nextAfter) {
+    url += '&after=' + nextAfter;
   }
+
+  console.log(chalk.dim.grey(url));
 
   getJSON(url, function(err, json) {
     if (err) {
@@ -81,13 +88,14 @@ function scanSubreddits(after) {
     }
 
     scanCount += 25;
+    nextAfter = json.data.after;
 
     async.each(json.data.children, function(listing, cb) {
       populateSubreddit(listing, cb);
     }, function() {
       setTimeout(function() {
-        scanSubreddits(json.data.after);
-      }, 1000);
+        scanSubreddits();
+      }, 800);
     });
   });
 }
@@ -107,7 +115,11 @@ function getSpecificSubreddit(subreddit, cb) {
 
 // basic persistence
 setInterval(function() {
-  var contents = JSON.stringify(subreddits);
+  var contents = JSON.stringify({
+    subreddits: subreddits,
+    nextAfter: nextAfter,
+    scanCount: scanCount
+  });
   try {
     fs.writeFileSync(persistFile, contents);
     console.log(chalk.bold.green('wrote persistence file'));
